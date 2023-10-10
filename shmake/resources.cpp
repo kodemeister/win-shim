@@ -152,7 +152,8 @@ void resources::replace_string_table(int index, const std::vector<std::wstring>&
 		RT_STRING,
 		MAKEINTRESOURCE(index),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
-		reinterpret_cast<void*>(&buffer[0]), buffer.size() * sizeof(WORD)))
+		reinterpret_cast<void*>(&buffer[0]),
+		static_cast<DWORD>(buffer.size() * sizeof(WORD))))
 	{
 		throw_win32_le();
 	}

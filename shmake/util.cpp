@@ -39,7 +39,6 @@ std::wstring get_win32_last_error()
 	DWORD dw = GetLastError();
 
 	PVOID lpMsgBuf;
-	LPVOID lpDisplayBuf;
 
 	::FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -66,7 +65,6 @@ void throw_win32_le(const std::wstring& action)
 	// Retrieve the system error message for the last-error code
 
 	LPVOID lpMsgBuf;
-	LPVOID lpDisplayBuf;
 
 	::FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
