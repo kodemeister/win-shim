@@ -13,8 +13,6 @@ public:
 	resources(const std::wstring& file_path = L"");
 	~resources();
 
-	std::wstring load_string(UINT id);
-
 	// returns file version resource value, formatted for display
 	std::wstring get_file_version();
 

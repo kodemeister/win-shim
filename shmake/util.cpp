@@ -34,26 +34,6 @@ std::string wstr_to_str(const std::wstring& wstr)
 	return strTo;
 }
 
-std::wstring get_win32_last_error()
-{
-	DWORD dw = GetLastError();
-
-	PVOID lpMsgBuf;
-
-	::FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		dw,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
-		0, NULL);
-	std::wstring sdw((wchar_t*)lpMsgBuf);
-	::LocalFree(lpMsgBuf);
-	return sdw;
-}
-
 /// <summary>
 ///  Throws runtime_error with win32 error code and human readable message. Intended to be the last thing the program does.
 /// </summary>

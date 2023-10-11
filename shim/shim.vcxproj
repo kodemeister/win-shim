@@ -151,13 +151,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\shmake\resources.cpp" />
-    <ClCompile Include="..\shmake\util.cpp" />
     <ClCompile Include="shim.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\shmake\resources.h" />
-    <ClInclude Include="..\shmake\util.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

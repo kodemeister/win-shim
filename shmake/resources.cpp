@@ -4,8 +4,6 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 
-#define MAX_LOADSTRING 1024
-
 #pragma comment(lib, "version.lib")
 
 using namespace std;
@@ -69,13 +67,6 @@ void resources::commit_changes()
 
 		edit_made = false;
 	}
-}
-
-std::wstring resources::load_string(UINT id)
-{
-	WCHAR szs[MAX_LOADSTRING];
-	::LoadString(hInstance, id, szs, MAX_LOADSTRING);
-	return wstring(szs);
 }
 
 std::wstring resources::get_file_version()

@@ -1,13 +1,21 @@
-#include <iostream>
+#include <stdio.h>
 #include <string>
 #include "windows.h"
 #include "resource.h"
-#include "../shmake/resources.h"
-#include "../shmake/util.h"
+
+#define MAX_LOADSTRING 1024
 
 using namespace std;
 
 const wstring CMD_TOKEN{ L"%s" };
+
+wstring load_string(UINT id)
+{
+    HINSTANCE hInstance = ::GetModuleHandle(NULL);
+    WCHAR szs[MAX_LOADSTRING];
+    ::LoadString(hInstance, id, szs, MAX_LOADSTRING);
+    return wstring(szs);
+}
 
 void get_caps(const wstring& caps_str, bool& clipboard, bool& no_kill)
 {
@@ -35,15 +43,34 @@ void get_caps(const wstring& caps_str, bool& clipboard, bool& no_kill)
     detect_cap(cap_name);
 }
 
+wstring get_win32_last_error()
+{
+    DWORD dw = GetLastError();
+
+    PVOID lpMsgBuf;
+
+    ::FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        dw,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&lpMsgBuf,
+        0, NULL);
+    wstring sdw((wchar_t*)lpMsgBuf);
+    ::LocalFree(lpMsgBuf);
+    return sdw;
+}
+
 // entry point has to be wWinMain (Unicode version of WinMain) instead of "main" - this allows us to change
 // target subsystem to "windows" and turn off console allocation.
 // note that "shmake" is still standard console executable.
 int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
-    resources res;
-    auto image_path = res.load_string(IDS_IMAGE_PATH);
-    auto args_pattern = res.load_string(IDS_ARGS);
-    auto caps_str = res.load_string(IDS_CAPABILITIES);
+    auto image_path = load_string(IDS_IMAGE_PATH);
+    auto args_pattern = load_string(IDS_ARGS);
+    auto caps_str = load_string(IDS_CAPABILITIES);
 
     bool cap_clipboard = false;
     bool cap_no_kill = false;
@@ -97,7 +124,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
     PROCESS_INFORMATION pi = { 0 };
     si.cb = sizeof(si);
 
-    //wcout << L"launching " << full_cmd << endl;
+    //wprintf(L"launching %s\n", full_cmd.c_str());
 
     if(!::CreateProcess(
         NULL, // lpApplicationName
@@ -112,7 +139,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
         &si,
         &pi))
     {
-        //wcout << L"could not create process - " << get_win32_last_error() << endl;
+        wstring emsg = get_win32_last_error();
+        wprintf(L"could not create process - %s\n", emsg.c_str());
         return 1;
     }
     else
@@ -140,7 +168,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
         if (!::SetInformationJobObject(hJob, JobObjectBasicUIRestrictions, &jUI, sizeof(jUI)))
         {
             wstring emsg = get_win32_last_error();
-            wcout << L"failed to set UI limits: " << emsg << endl;
+            wprintf(L"failed to set UI limits: %s\n", emsg.c_str());
         }
 
         if (!cap_no_kill)
@@ -150,14 +178,12 @@ int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
             if (!::SetInformationJobObject(hJob, JobObjectExtendedLimitInformation, &jEli, sizeof(jEli)))
             {
                 wstring emsg = get_win32_last_error();
-                //wcout << L"failed to set extended limits: " << emsg << endl;
+                wprintf(L"failed to set extended limits: %s\n", emsg.c_str());
             }
         }
 
-        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION jCpu = { 0 };
-
         // now the process starts for real
-        //wcout << L"resuming" << endl;
+        //wprintf(L"resuming\n");
         ::ResumeThread(pi.hThread);
 
 		::WaitForSingleObject(pi.hProcess, INFINITE);
@@ -165,7 +191,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t *envp[])
 		DWORD exit_code = 0;
 		// if next line fails, code is still 0
 		::GetExitCodeProcess(pi.hProcess, &exit_code);
-        //wcout << L"exited with code " << exit_code << endl;
+        //wprintf(L"exited with code %lu\n", exit_code);
 
 		// free OS resources
 		::CloseHandle(pi.hProcess);
